@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node-express-mongo</title>
+</head>
+<style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 80%;
+      margin: 50px auto;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    .d-flex{
+        display: flex;
+    }
+    button{
+        margin-right: 5px;
+        background-color: green;
+        border: none;
+        padding: 8px;
+        outline: none;
+        color: #fff;
+        cursor:pointer
+    }
+    button:last-child{
+        background-color: red !important;
+    }
+    </style>
+<body>
+    <h3 style="width: 80%; margin: auto;">Look mom, i have a mongo db.</h3>
+    <!-- form -->
+    <form style="width: 80%; margin: auto;" action="/addproduct" method="post">
+        <input type="text" name="name" placeholder="product name">
+        <input type="text" name="price" placeholder='price' id="">
+        <input type="number" name="quantity" placeholder="quantity" id="">
+        <button type="submit">Add Product</button>
+    </form>
+
+    <!-- display data -->
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Action</>
+              </tr>
+        </thead>
+
+        <tbody id="show">
+
+        </tbody>
+    </table>
+
+    <!-- for update section div here -->
+    <div id="update-form" style="width: 80%; margin:auto;" >
+
+    </div>
+
+    <script>
+        const tbody = document.querySelector('#show');
+        fetch('http://localhost:4000/products')
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            data.map((item) => {
+                tbody.innerHTML += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.price}</td>
+                    <td><button onclick='loadItem("${item._id}")'>Edit</button> <button onclick="delelteItem('${item._id}')">Delete</button></td>
+                </tr>
+                `
+            })
+        })
+
+        // delete item
+        const delelteItem = (id) => {
+            fetch(`delete/${id}`, {
+                method:'DELETE'
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log('Deleted Successfully.');
+            })
+        }
+
+        // show data using id for update
+        const loadItem = (id) => {
+            fetch(`products/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('update-form').innerHTML = `
+                <div>
+                    <h3>Update Value:</h3>
+                    <input id='name' type='text' value='${data.name}' />
+                    <input id='price' type='text' value='${data.price}' />
+                    <input id='quantity' type='text' value='${data.quantity}' />
+                    <button onclick='updateItem("${data._id}")'>Update</button>
+                </div>
+
+                `
+            })
+        }
+
+        // update item
+        const updateItem = (id) => {
+            const price = document.getElementById('price').value;
+            const name = document.getElementById('name').value;
+            const quantity = document.getElementById('quantity').value;
+            console.log('updating....')
+            fetch(`update/${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-type': 'application/json;',
+                },
+                body: JSON.stringify({
+                    id, price, quantity, name
+                })
+
+            })
+            .then((response) => response.json())
+            .then(data => {
+                console.log(data)
+            });
+
+        }
+    </script>
+</body>
+</html>
